@@ -13,6 +13,7 @@
   const MS_MINIMO = 70;
   const MS_POR_MANZANA = 3;
   const MANZANAS_POR_NIVEL = 5;
+  const PASOS_RACHA = 15;       // pasos máximos entre manzanas para que valgan doble
   const CLAVE_RECORD = "viborita-lcd.mejor";
 
   const lienzo = document.getElementById("campo");
@@ -78,6 +79,7 @@
   let puntos, manzanas, nivel, tickMs, mejor;
   let estado;              // "listo" | "jugando" | "pausa" | "fin"
   let acumulado, anterior, finDesde;
+  let pasoActual, pasoUltimaManzana;
 
   const enMalla = (c) => c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < ROWS;
   const cifras = (n) => String(Math.max(0, Math.round(n))).padStart(4, "0");
@@ -129,6 +131,8 @@
     tickMs = MS_INICIAL;
     acumulado = 0;
     finDesde = 0;
+    pasoActual = 0;
+    pasoUltimaManzana = null;
     comida = celdaLibre();
   }
 
@@ -148,6 +152,7 @@
   }
 
   function paso() {
+    pasoActual += 1;
     rumbo = siguienteRumbo();
     const cabeza = { x: cuerpo[0].x + rumbo.x, y: cuerpo[0].y + rumbo.y };
 
@@ -163,10 +168,13 @@
 
     if (cabeza.x === comida.x && cabeza.y === comida.y) {
       const dorada = esDorada();
+      const enRacha =
+        pasoUltimaManzana !== null && pasoActual - pasoUltimaManzana <= PASOS_RACHA;
       manzanas += 1;
       nivel = Math.floor(manzanas / MANZANAS_POR_NIVEL) + 1;
-      puntos += 10 * nivel * (dorada ? 3 : 1);
+      puntos += 10 * nivel * (dorada ? 3 : 1) * (enRacha ? 2 : 1);
       tickMs = Math.max(MS_MINIMO, MS_INICIAL - manzanas * MS_POR_MANZANA);
+      pasoUltimaManzana = pasoActual;
       comida = celdaLibre();
     } else {
       cuerpo.pop();
