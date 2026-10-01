@@ -188,6 +188,13 @@
     pintarAviso();
   }
 
+  function borrarMejor() {
+    if (!confirm("¿Borrar la mejor marca? Esta acción no se puede deshacer.")) return;
+    mejor = 0;
+    guardarRecord(0);
+    pintarDatos();
+  }
+
   function botonPrincipal() {
     if (estado === "jugando" || estado === "pausa") alternarPausa();
     else comenzar();
@@ -331,6 +338,7 @@
   document.getElementById("btn-iniciar").addEventListener("click", comenzar);
   document.getElementById("btn-pausa").addEventListener("click", alternarPausa);
   document.getElementById("btn-ok").addEventListener("click", botonPrincipal);
+  document.getElementById("btn-borrar-record").addEventListener("click", borrarMejor);
 
   // Deslizar sobre la pantalla, para jugar con el pulgar.
   let origen = null;
