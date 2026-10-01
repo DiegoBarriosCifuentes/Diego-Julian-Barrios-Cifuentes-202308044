@@ -81,6 +81,16 @@
 
   const enMalla = (c) => c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < ROWS;
   const cifras = (n) => String(Math.max(0, Math.round(n))).padStart(4, "0");
+  const esDorada = () => (manzanas + 1) % 7 === 0;
+
+  const VECINOS = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+  function esContorno(fila, col) {
+    return VECINOS.some(([df, dc]) => {
+      const f = fila + df;
+      const c = col + dc;
+      return f < 0 || f >= 5 || c < 0 || c >= 5 || !MANZANA[f][c];
+    });
+  }
 
   function leerRecord() {
     try {
@@ -152,9 +162,10 @@
     cuerpo.unshift(cabeza);
 
     if (cabeza.x === comida.x && cabeza.y === comida.y) {
+      const dorada = esDorada();
       manzanas += 1;
       nivel = Math.floor(manzanas / MANZANAS_POR_NIVEL) + 1;
-      puntos += 10 * nivel;
+      puntos += 10 * nivel * (dorada ? 3 : 1);
       tickMs = Math.max(MS_MINIMO, MS_INICIAL - manzanas * MS_POR_MANZANA);
       comida = celdaLibre();
     } else {
@@ -214,14 +225,15 @@
     ctx.fillRect(W - 2, 0, 2, H);
 
     // manzana: parpadea salvo que el visor pida calma
-    const visible = quieto.matches || estado !== "jugando" || Math.floor(ahora / 420) % 2 === 0;
+    const dorada = esDorada();
+    const visible = dorada || quieto.matches || estado !== "jugando" || Math.floor(ahora / 420) % 2 === 0;
     if (visible) {
       const px = 4;
       const ox = comida.x * CELDA + 2;
       const oy = comida.y * CELDA + 2;
       for (let f = 0; f < 5; f += 1) {
         for (let c = 0; c < 5; c += 1) {
-          if (MANZANA[f][c]) punto(ox + c * px, oy + f * px, px, px);
+          if (MANZANA[f][c] && (!dorada || esContorno(f, c))) punto(ox + c * px, oy + f * px, px, px);
         }
       }
     }
